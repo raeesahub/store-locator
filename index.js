@@ -266,3 +266,34 @@ map.on('load', () => {
     }
   });
 });
+
+function buildLocationList({ features }) {
+  for (const { properties } of features) {
+    /* Add a new listing section to the sidebar. */
+    const listings = document.getElementById('listings');
+    const listing = listings.appendChild(document.createElement('div'));
+    /* Assign a unique `id` to the listing. */
+    listing.id = `listing-${properties.id}`;
+    /* Assign the `item` class to each listing for styling. */
+    listing.className = 'item';
+
+    /* Add the link to the individual listing created above. */
+    const link = listing.appendChild(document.createElement('a'));
+    link.href = '#';
+    link.className = 'title';
+    link.id = `link-${properties.id}`;
+    link.innerHTML = `${properties.address}`;
+
+    /* Add details to the individual listing. */
+    const details = listing.appendChild(document.createElement('div'));
+    details.innerHTML = `${properties.city}`;
+    if (properties.phone) {
+      details.innerHTML += ` · ${properties.phoneFormatted}`;
+    }
+    if (properties.distance) {
+      const roundedDistance = Math.round(properties.distance * 100) / 100;
+      details.innerHTML += `<div><strong>${roundedDistance} miles away</strong></div>`;
+    }
+  }
+}
+
