@@ -253,3 +253,16 @@ const stores = {
 stores.features.forEach(function (store, i) {
   store.properties.id = i;
 });
+
+map.on('load', () => {
+  /* Add the data to your map as a layer */
+  map.addLayer({
+    id: 'locations',
+    type: 'circle',
+    /* Add a GeoJSON source containing place coordinates and information. */
+    source: {
+      type: 'geojson',
+      data: stores
+    }
+  });
+});
