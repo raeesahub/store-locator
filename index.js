@@ -6,18 +6,18 @@
     center: [-77.034084, 38.909671],
     zoom: 13,
     scrollZoom: false
-});
+  });
 
-const stores = {
-  "type": "FeatureCollection",
-  "features": [
+  const stores = {
+    "type": "FeatureCollection",
+    "features": [
     {
       "type": "Feature",
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -77.034084142948,
-          38.909671288923
+        -77.034084142948,
+        38.909671288923
         ]
       },
       "properties": {
@@ -36,8 +36,8 @@ const stores = {
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -77.049766,
-          38.900772
+        -77.049766,
+        38.900772
         ]
       },
       "properties": {
@@ -56,8 +56,8 @@ const stores = {
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -77.043929,
-          38.910525
+        -77.043929,
+        38.910525
         ]
       },
       "properties": {
@@ -76,8 +76,8 @@ const stores = {
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -77.0672,
-          38.90516896
+        -77.0672,
+        38.90516896
         ]
       },
       "properties": {
@@ -96,8 +96,8 @@ const stores = {
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -77.002583742142,
-          38.887041080933
+        -77.002583742142,
+        38.887041080933
         ]
       },
       "properties": {
@@ -116,8 +116,8 @@ const stores = {
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -76.933492720127,
-          38.99225245786
+        -76.933492720127,
+        38.99225245786
         ]
       },
       "properties": {
@@ -133,8 +133,8 @@ const stores = {
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -77.097083330154,
-          38.980979
+        -77.097083330154,
+        38.980979
         ]
       },
       "properties": {
@@ -153,8 +153,8 @@ const stores = {
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -77.359425054188,
-          38.958058116661
+        -77.359425054188,
+        38.958058116661
         ]
       },
       "properties": {
@@ -173,8 +173,8 @@ const stores = {
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -77.10853099823,
-          38.880100922392
+        -77.10853099823,
+        38.880100922392
         ]
       },
       "properties": {
@@ -193,8 +193,8 @@ const stores = {
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -75.28784,
-          40.008008
+        -75.28784,
+        40.008008
         ]
       },
       "properties": {
@@ -212,8 +212,8 @@ const stores = {
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -75.20121216774,
-          39.954030175164
+        -75.20121216774,
+        39.954030175164
         ]
       },
       "properties": {
@@ -231,8 +231,8 @@ const stores = {
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -77.043959498405,
-          38.903883387232
+        -77.043959498405,
+        38.903883387232
         ]
       },
       "properties": {
@@ -246,88 +246,116 @@ const stores = {
         "state": "D.C."
       }
     }
-  ]
-};
+    ]
+  };
 
-/* Assign a unique ID to each store */
-stores.features.forEach(function (store, i) {
-  store.properties.id = i;
-});
-
-map.on('load', () => {
-  /* Add the data to your map as a layer */
-  map.addLayer({
-    id: 'locations',
-    type: 'circle',
-    /* Add a GeoJSON source containing place coordinates and information. */
-
-    source: {
-      type: 'geojson',
-      data: stores
-    }
+  /* Assign a unique ID to each store */
+  stores.features.forEach(function (store, i) {
+    store.properties.id = i;
   });
-  buildLocationList(stores);
-});
 
-function buildLocationList({ features }) {
-  for (const { properties } of features) {
-    /* Add a new listing section to the sidebar. */
-    const listings = document.getElementById('listings');
-    const listing = listings.appendChild(document.createElement('div'));
-    /* Assign a unique `id` to the listing. */
-    listing.id = `listing-${properties.id}`;
-    /* Assign the `item` class to each listing for styling. */
-    listing.className = 'item';
+  map.on('load', () => {
+    /* Add the data to your map as a layer */
+    map.addLayer({
+      id: 'locations',
+      type: 'circle',
+      /* Add a GeoJSON source containing place coordinates and information. */
 
-    /* Add the link to the individual listing created above. */
-    const link = listing.appendChild(document.createElement('a'));
-    link.href = '#';
-    link.className = 'title';
-    link.id = `link-${properties.id}`;
-    link.innerHTML = `${properties.address}`;
+      source: {
+        type: 'geojson',
+        data: stores
+      }
+    });
+    buildLocationList(stores);
+  });
 
-    /* Add details to the individual listing. */
-    const details = listing.appendChild(document.createElement('div'));
-    details.innerHTML = `${properties.city}`;
-    if (properties.phone) {
-      details.innerHTML += ` · ${properties.phoneFormatted}`;
+  map.on('click', ({ point }) => {
+    /* Determine if a feature in the "locations" layer exists at that point. */
+    const features = map.queryRenderedFeatures(point, {
+      layers: ['locations']
+    });
+
+    /* If it does not exist, return */
+    if (!features.length) return;
+
+    const clickedPoint = features[0];
+
+    /* Fly to the point */
+    flyToStore(clickedPoint);
+
+    /* Close all other popups and display popup for clicked store */
+    createPopUp(clickedPoint);
+
+    /* Highlight listing in sidebar (and remove highlight for all other listings) */
+    const activeItem = document.getElementsByClassName('active');
+    if (activeItem[0]) {
+      activeItem[0].classList.remove('active');
     }
-    if (properties.distance) {
-      const roundedDistance = Math.round(properties.distance * 100) / 100;
-      details.innerHTML += `<div><strong>${roundedDistance} miles away</strong></div>`;
+    const listing = document.getElementById(
+      `listing-${clickedPoint.properties.id}`
+      );
+    listing.classList.add('active');
+  });
+
+
+  function buildLocationList({ features }) {
+    for (const { properties } of features) {
+      /* Add a new listing section to the sidebar. */
+      const listings = document.getElementById('listings');
+      const listing = listings.appendChild(document.createElement('div'));
+      /* Assign a unique `id` to the listing. */
+      listing.id = `listing-${properties.id}`;
+      /* Assign the `item` class to each listing for styling. */
+      listing.className = 'item';
+
+      /* Add the link to the individual listing created above. */
+      const link = listing.appendChild(document.createElement('a'));
+      link.href = '#';
+      link.className = 'title';
+      link.id = `link-${properties.id}`;
+      link.innerHTML = `${properties.address}`;
+
+      /* Add details to the individual listing. */
+      const details = listing.appendChild(document.createElement('div'));
+      details.innerHTML = `${properties.city}`;
+      if (properties.phone) {
+        details.innerHTML += ` · ${properties.phoneFormatted}`;
+      }
+      if (properties.distance) {
+        const roundedDistance = Math.round(properties.distance * 100) / 100;
+        details.innerHTML += `<div><strong>${roundedDistance} miles away</strong></div>`;
+      }
+      link.addEventListener('click', function () {
+        for (const feature of features) {
+          if (this.id === `link-${feature.properties.id}`) {
+            flyToStore(feature);
+            createPopUp(feature);
+          }
+        }
+        const activeItem = document.getElementsByClassName('active');
+        if (activeItem[0]) {
+          activeItem[0].classList.remove('active');
+        }
+        this.parentNode.classList.add('active');
+      });
     }
   }
-}
 
-function flyToStore(currentFeature) {
-  map.flyTo({
-    center: currentFeature.geometry.coordinates,
-    zoom: 15
-  });
-}
+  function flyToStore(currentFeature) {
+    map.flyTo({
+      center: currentFeature.geometry.coordinates,
+      zoom: 15
+    });
+  }
 
-function createPopUp(currentFeature) {
-  const popUps = document.getElementsByClassName('mapboxgl-popup');
-  /** Check if there is already a popup on the map and if so, remove it */
-  if (popUps[0]) popUps[0].remove();
+  function createPopUp(currentFeature) {
+    const popUps = document.getElementsByClassName('mapboxgl-popup');
+    /** Check if there is already a popup on the map and if so, remove it */
+    if (popUps[0]) popUps[0].remove();
 
-  const popup = new mapboxgl.Popup({ closeOnClick: false })
+    const popup = new mapboxgl.Popup({ closeOnClick: false })
     .setLngLat(currentFeature.geometry.coordinates)
     .setHTML(`<h3>Sweetgreen</h3><h4>${currentFeature.properties.address}</h4>`)
     .addTo(map);
-}
-
-link.addEventListener('click', function () {
-  for (const feature of features) {
-    if (this.id === `link-${feature.properties.id}`) {
-      flyToStore(feature);
-      createPopUp(feature);
-    }
   }
-  const activeItem = document.getElementsByClassName('active');
-  if (activeItem[0]) {
-    activeItem[0].classList.remove('active');
-  }
-  this.parentNode.classList.add('active');
-});
 
