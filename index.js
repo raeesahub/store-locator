@@ -260,11 +260,13 @@ map.on('load', () => {
     id: 'locations',
     type: 'circle',
     /* Add a GeoJSON source containing place coordinates and information. */
+
     source: {
       type: 'geojson',
       data: stores
     }
   });
+  buildLocationList(stores);
 });
 
 function buildLocationList({ features }) {
