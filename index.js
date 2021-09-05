@@ -317,3 +317,17 @@ function createPopUp(currentFeature) {
     .addTo(map);
 }
 
+link.addEventListener('click', function () {
+  for (const feature of features) {
+    if (this.id === `link-${feature.properties.id}`) {
+      flyToStore(feature);
+      createPopUp(feature);
+    }
+  }
+  const activeItem = document.getElementsByClassName('active');
+  if (activeItem[0]) {
+    activeItem[0].classList.remove('active');
+  }
+  this.parentNode.classList.add('active');
+});
+
