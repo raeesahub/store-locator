@@ -299,3 +299,10 @@ function buildLocationList({ features }) {
   }
 }
 
+function flyToStore(currentFeature) {
+  map.flyTo({
+    center: currentFeature.geometry.coordinates,
+    zoom: 15
+  });
+}
+
